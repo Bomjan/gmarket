@@ -16,9 +16,10 @@ import (
 
 func main() {
 	//load config
-
 	cfg := config.MustLoadConfig()
+
 	//database setup
+	// storage, err := sqlite.New()
 	// set up router
 	router := http.NewServeMux()
 	router.HandleFunc("POST /api/students", student.New())
