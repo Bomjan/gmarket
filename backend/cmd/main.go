@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Bomjan/gmarket/backend/internal/config"
+	"github.com/Bomjan/gmarket/backend/internal/http/handlers/student"
 )
 
 func main() {
@@ -20,9 +21,7 @@ func main() {
 	//database setup
 	// set up router
 	router := http.NewServeMux()
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello there testing"))
-	})
+	router.HandleFunc("POST /api/students", student.New())
 	// set up server
 
 	server := http.Server{
