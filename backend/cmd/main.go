@@ -12,6 +12,7 @@ import (
 
 	"github.com/Bomjan/gmarket/backend/internal/config"
 	"github.com/Bomjan/gmarket/backend/internal/http/handlers/student"
+	"github.com/Bomjan/gmarket/backend/internal/storage/sqlite"
 )
 
 func main() {
@@ -19,10 +20,15 @@ func main() {
 	cfg := config.MustLoadConfig()
 
 	//database setup
-	// storage, err := sqlite.New()
+	storage, err := sqlite.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// set up router
 	router := http.NewServeMux()
-	router.HandleFunc("POST /api/students", student.New())
+	router.HandleFunc("POST /api/students", student.New(storage))
+	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
 	// set up server
 
 	server := http.Server{
