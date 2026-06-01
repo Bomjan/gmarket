@@ -1,3 +1,5 @@
 /backend/config/local.yaml
 /backend/storage
 /storage.db
+
+.idea
