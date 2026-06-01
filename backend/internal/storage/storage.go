@@ -11,4 +11,5 @@ type Storage interface {
 	GetProductById(id int64) (types.Product, error)
 	GetAllProducts() ([]types.Product, error)
 	DeleteProductById(id int64) error
+	UpdateProductById(id int64, name string, price float64) (int64, error)
 }

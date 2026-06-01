@@ -196,3 +196,27 @@ func (s *Sqlite) DeleteProductById(id int64) error {
 	}
 	return nil
 }
+
+func (s *Sqlite) UpdateProductById(id int64, name string, price float64) (int64, error) {
+	// inform that we are here
+	slog.Info("updating product", slog.String("id", fmt.Sprint(id)))
+
+	// take action
+	stmt, err := s.Db.Prepare("UPDATE product SET name=?, price=? WHERE id=?")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(name, price, id)
+	if err != nil {
+		return 0, err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return rowsAffected, nil
+}

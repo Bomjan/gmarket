@@ -124,3 +124,43 @@ func DeleteProductById(storage storage.Storage) http.HandlerFunc {
 		}
 	}
 }
+
+func UpdateProductById(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			if err := response.WriteJSON(w, http.StatusBadRequest, err.Error()); err != nil {
+				return
+			}
+			return
+		}
+		var product types.Product
+		if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+			if e := response.WriteJSON(w, http.StatusBadRequest, err.Error()); e != nil {
+				return
+			}
+			return
+		}
+
+		if product.Id != intId {
+			slog.Info("failed to update product", slog.String("urlId", fmt.Sprint(intId)), slog.String("bodyId", fmt.Sprint(product.Id)))
+			if err := response.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "the passed id should be same as provided in the body"}); err != nil {
+				return
+			}
+			return
+		}
+
+		rowsAffected, err := storage.UpdateProductById(product.Id, product.Name, product.Price)
+		if err != nil {
+			if err := response.WriteJSON(w, http.StatusInternalServerError, err.Error()); err != nil {
+				return
+			}
+			return
+		}
+
+		if err := response.WriteJSON(w, http.StatusOK, map[string]int64{"rows affected": rowsAffected}); err != nil {
+			return
+		}
+	}
+}
