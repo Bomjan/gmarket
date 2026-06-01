@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/Bomjan/gmarket/backend/internal/config"
@@ -22,10 +23,10 @@ func New(cfg *config.Config) (*Sqlite, error) {
 	}
 
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS student (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	name TEXT,
-	email TEXT,
-	age INTEGER
+		id INTEGER PRIMARY KEY AUTOINCREMENT
+		,name TEXT
+		,email TEXT
+		,age INTEGER
 	);`)
 
 	if err != nil {
@@ -69,7 +70,7 @@ func (s *Sqlite) GetStudentById(id int64) (types.Student, error) {
 	err = stmt.QueryRow(id).Scan(&student.Id, &student.Name, &student.Email, &student.Age)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return types.Student{}, fmt.Errorf("no students found with id %s", fmt.Sprint(id))
 		}
 		return types.Student{}, fmt.Errorf(err.Error())
@@ -77,4 +78,31 @@ func (s *Sqlite) GetStudentById(id int64) (types.Student, error) {
 
 	return student, nil
 
+}
+
+func (s *Sqlite) GetAllStudents() ([]types.Student, error) {
+	stmt, err := s.Db.Prepare("SELECT id, name, email, age FROM student")
+	if err != nil {
+		return []types.Student{}, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return []types.Student{}, err
+	}
+	defer rows.Close()
+
+	var students []types.Student
+	for rows.Next() {
+		var student types.Student
+		err := rows.Scan(&student.Id, &student.Name, &student.Email, &student.Age)
+		if err != nil {
+			return []types.Student{}, err
+		}
+
+		students = append(students, student)
+	}
+
+	return students, nil
 }

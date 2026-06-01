@@ -22,20 +22,27 @@ func New(storage storage.Storage) http.HandlerFunc {
 		var student types.Student
 		err := json.NewDecoder(r.Body).Decode(&student)
 		if errors.Is(err, io.EOF) {
-			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			err := response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			if err != nil {
+				return
+			}
 			return
 		}
 
 		if err != nil {
-			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			err := response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			if err != nil {
+				return
+			}
 			return
 		}
 
 		// request validation
 		if err := validator.New().Struct(student); err != nil {
 
-			validationErrs := err.(validator.ValidationErrors)
-			response.WriteJSON(w, http.StatusBadRequest, response.ValidationError(validationErrs))
+			var validationErrs validator.ValidationErrors
+			errors.As(err, &validationErrs)
+			_ = response.WriteJSON(w, http.StatusBadRequest, response.ValidationError(validationErrs))
 			return
 		}
 
@@ -50,7 +57,7 @@ func New(storage storage.Storage) http.HandlerFunc {
 			response.WriteJSON(w, http.StatusInternalServerError, err)
 		}
 
-		response.WriteJSON(w, http.StatusCreated, map[string]int64{"success": lastId})
+		_ = response.WriteJSON(w, http.StatusCreated, map[string]int64{"success": lastId})
 
 	}
 }
@@ -63,17 +70,35 @@ func GetById(storage storage.Storage) http.HandlerFunc {
 		intId, err := strconv.ParseInt(id, 10, 64)
 		if err != nil {
 			slog.Error("error parsing request", slog.String("id", id))
-			response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
+			_ = response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err))
 			return
 		}
 
 		student, err := storage.GetStudentById(intId)
 		if err != nil {
 			slog.Error("error getting student", slog.String("id", id))
-			response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
+			_ = response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err))
 			return
 		}
 
-		response.WriteJSON(w, http.StatusOK, student)
+		_ = response.WriteJSON(w, http.StatusOK, student)
+	}
+}
+
+func GetAllStudents(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("getting all students")
+
+		students, err := storage.GetAllStudents()
+		if err != nil {
+			if err := response.WriteJSON(w, http.StatusInternalServerError, response.GeneralError(err)); err != nil {
+				return
+			}
+		}
+
+		if err := response.WriteJSON(w, http.StatusOK, students); err != nil {
+			return
+		}
+
 	}
 }
