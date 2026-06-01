@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Bomjan/gmarket/backend/internal/config"
+	"github.com/Bomjan/gmarket/backend/internal/http/handlers/products"
 	"github.com/Bomjan/gmarket/backend/internal/http/handlers/student"
 	"github.com/Bomjan/gmarket/backend/internal/storage/sqlite"
 )
@@ -27,9 +28,13 @@ func main() {
 
 	// set up router
 	router := http.NewServeMux()
+	// Student api
 	router.HandleFunc("POST /api/students", student.New(storage))
 	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
 	router.HandleFunc("GET /api/students", student.GetAllStudents(storage))
+
+	// Product api
+	router.HandleFunc("POST /api/products", products.New(storage))
 	// set up server
 
 	server := http.Server{

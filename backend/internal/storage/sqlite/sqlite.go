@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/Bomjan/gmarket/backend/internal/config"
 	"github.com/Bomjan/gmarket/backend/internal/types"
@@ -15,13 +16,14 @@ type Sqlite struct {
 }
 
 func New(cfg *config.Config) (*Sqlite, error) {
-	fmt.Println("while opening", cfg.StoragePath)
+	slog.Info("creating new database")
 	db, err := sql.Open("sqlite3", cfg.StoragePath)
 
 	if err != nil {
 		return nil, err
 	}
 
+	// Create student table
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS student (
 		id INTEGER PRIMARY KEY AUTOINCREMENT
 		,name TEXT
@@ -29,6 +31,17 @@ func New(cfg *config.Config) (*Sqlite, error) {
 		,age INTEGER
 	);`)
 
+	if err != nil {
+		return nil, err
+	}
+
+	// Create product table
+	slog.Info("creating product table")
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS product (
+	    id INTEGER PRIMARY KEY AUTOINCREMENT
+		,name TEXT
+	    ,price DECIMAL
+	);`)
 	if err != nil {
 		return nil, err
 	}
@@ -105,4 +118,27 @@ func (s *Sqlite) GetAllStudents() ([]types.Student, error) {
 	}
 
 	return students, nil
+}
+
+func (s *Sqlite) CreateProduct(name string, price float64) (int64, error) {
+
+	slog.Info("creating new product")
+	stmt, err := s.Db.Prepare("INSERT INTO product(name, price) VALUES (?, ?)")
+	if err != nil {
+		return 0, err
+	}
+
+	defer stmt.Close()
+
+	id, err := stmt.Exec(name, price)
+	if err != nil {
+		return 0, err
+	}
+	lastId, err := id.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	slog.Info("product created", slog.String("id", fmt.Sprint(lastId)))
+
+	return lastId, nil
 }
