@@ -35,6 +35,10 @@ func main() {
 
 	// Product api
 	router.HandleFunc("POST /api/products", products.New(storage))
+	router.HandleFunc("GET /api/products/{id}", products.GetById(storage))
+	router.HandleFunc("GET /api/products", products.GetProducts(storage))
+	router.HandleFunc("DELETE /api/products/{id}", products.DeleteProductById(storage))
+
 	// set up server
 
 	server := http.Server{

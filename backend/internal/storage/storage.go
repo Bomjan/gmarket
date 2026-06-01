@@ -8,4 +8,7 @@ type Storage interface {
 	GetAllStudents() ([]types.Student, error)
 
 	CreateProduct(name string, price float64) (int64, error)
+	GetProductById(id int64) (types.Product, error)
+	GetAllProducts() ([]types.Product, error)
+	DeleteProductById(id int64) error
 }
