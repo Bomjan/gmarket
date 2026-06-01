@@ -19,7 +19,7 @@ func WriteJSON(w http.ResponseWriter, status int, payload any) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 
-	return json.NewEncoder(w).Encode(payload) //because this basically returns an error
+	return json.NewEncoder(w).Encode(payload) //because this basically returns an error anyway
 
 }
 
