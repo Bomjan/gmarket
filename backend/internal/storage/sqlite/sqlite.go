@@ -166,7 +166,12 @@ func (s *Sqlite) GetAllProducts() ([]types.Product, error) {
 		return []types.Product{}, err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			return
+		}
+	}()
+
 	rows, err := stmt.Query()
 	if err != nil {
 		return []types.Product{}, err

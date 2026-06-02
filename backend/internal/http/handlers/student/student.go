@@ -102,3 +102,20 @@ func GetAllStudents(storage storage.Storage) http.HandlerFunc {
 
 	}
 }
+
+//func UpdateStudentById(storage storage.Storage) http.HandlerFunc {
+//	return func(w http.ResponseWriter, r *http.Request) {
+//		id := r.PathValue("id")
+//		slog.Info("updating a student", slog.String("user id", fmt.Sprint(id)))
+//
+//		var student types.Student
+//		err := json.NewDecoder(r.Body).Decode(&student)
+//		if err != nil {
+//			if resperr := response.WriteJSON(w, http.StatusBadRequest, response.GeneralError(err)); resperr != nil {
+//				return
+//			}
+//			return
+//		}
+//
+//	}
+//}

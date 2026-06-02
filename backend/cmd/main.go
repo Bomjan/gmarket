@@ -25,6 +25,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	slog.Info("database initialized successfully")
 
 	// set up router
 	router := http.NewServeMux()
